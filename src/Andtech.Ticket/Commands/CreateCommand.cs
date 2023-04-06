@@ -68,9 +68,9 @@ namespace Andtech.Ticket
 						Console.WriteLine();
 					}
 				}
-				catch
+				catch (Exception ex)
 				{
-
+					Log.Error.WriteLine(ex);
 				}
 			}
 
