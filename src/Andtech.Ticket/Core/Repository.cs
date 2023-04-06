@@ -18,7 +18,7 @@ namespace Andtech.Ticket
 			var host = config.hosts
 				.First(x => url.Contains(x.hostname));
 			var hostUrl = "https://" + host.hostname;
-			var client = new GitLabClient(hostUrl, host.accessToken);
+			var client = new GitLabClient(hostUrl, host.access_token);
 
 			var repository = new Repository()
 			{
@@ -30,11 +30,11 @@ namespace Andtech.Ticket
 			repository.ProjectID = repository.GetConfigInt("ticket.projectid");
 			if (fetchMissingData && repository.ProjectID < 0)
 			{
-				repository.ProjectID = await repository.GetProjectIDAsync(client, host.accessToken);
+				repository.ProjectID = await repository.GetProjectIDAsync(client, host.access_token);
 			}
 			if (fetchMissingData && repository.UserID < 0)
 			{
-				repository.UserID = await repository.GetUserIDAsync(client, host.accessToken);
+				repository.UserID = await repository.GetUserIDAsync(client, host.access_token);
 			}
 
 			return repository;
