@@ -9,7 +9,7 @@ namespace Andtech.Ticket
 	public class CreateCommand
 	{
 
-		[Verb("create", aliases: new string[] { "new", "open" }, HelpText = "Create new issues.")]
+		[Verb("create", isDefault: true, aliases: new string[] { "new", "open" }, HelpText = "Create new issues.")]
 		public class Options : BaseOptions
 		{
 			[Option("me", HelpText = "Assign all issues to yourself")]

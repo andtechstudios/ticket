@@ -9,7 +9,7 @@ namespace Andtech.Ticket
 	public class ListCommand
 	{
 
-		[Verb("list", isDefault: true, aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
+		[Verb("list",  aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
 		public class Options : BaseOptions
 		{
 			[Option("align-labels", HelpText = "Align all label dots when printed.")]
