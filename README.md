@@ -4,11 +4,11 @@
 ```
 hosts:
   - hostname: gitlab.com
-    accessToken: glpat-xxxxxx
+    access_token: glpat-xxxxxx
   - hostname: gitlab.example.com
-    accessToken: yyyyyy
+    access_token: yyyyyy
   - hostname: gitlab.example.org
-    accessToken: zzzzzz 
+    access_token: zzzzzz 
 ```
 
 * Run `ticket init` or configure `.gitconfig` as follows:
