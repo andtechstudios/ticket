@@ -24,7 +24,7 @@
 
 	<!-- Linux development -->
 	<Choose>
-		<When Condition=" '$(Configuration)'=='Debug' ">
+		<When Condition=" '$(Configuration)'=='Debug (Linux)' ">
 			<PropertyGroup>
 				<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
 			</PropertyGroup>
