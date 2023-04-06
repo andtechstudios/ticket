@@ -1,0 +1,28 @@
+env:
+  NUGET_SOURCE_URL: ${{secrets.GITLAB_PKG_URL}}/nuget
+  NUGET_PROJECT_DIR: src
+  NUGET_USER_NAME: ${{secrets.GITLAB_ACCESS_TOKEN_OWNER}}
+  NUGET_API_KEY: ${{secrets.GITLAB_ACCESS_TOKEN}}
+
+on:
+  create:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '7.0.x'
+      - run: |
+          version=$(git tag -l --sort=-v:refname | head -n 1)
+          version=${version/v/}
+          dotnet build --configuration Release "${{env.NUGET_PROJECT_DIR}}" /p:VersionPrefix="$version"
+          dotnet pack --configuration Release "${{env.NUGET_PROJECT_DIR}}" --no-build --output . /p:VersionPrefix="$version"
+      - run: |
+          dotnet nuget add source "${{env.NUGET_SOURCE_URL}}/index.json" --name gitlab --username "${{env.NUGET_USER_NAME}}" --password "${{env.NUGET_API_KEY}}" --store-password-in-clear-text
+          dotnet nuget push *.nupkg --source gitlab --api-key "${{env.NUGET_API_KEY}}" --skip-duplicate

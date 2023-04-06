@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackageId>Andtech.Ticket</PackageId>
+		<RepositoryUrl>https://github.com/andtechstudios/ticket</RepositoryUrl>
+		<Copyright>"© $(CompanyName) $([System.DateTime]::Now.ToString(`yyyy`))"</Copyright>
+		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<!-- dotnet-tool -->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<ToolCommandName>ticket</ToolCommandName>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+	<Choose>
+		<When Condition=" '$(Configuration)'=='Release' ">
+			<PropertyGroup>
+				<PackAsTool>true</PackAsTool>
+			</PropertyGroup>
+		</When>
+	</Choose>
+
+	<!-- Linux development -->
+	<Choose>
+		<When Condition=" '$(Configuration)'=='Debug' ">
+			<PropertyGroup>
+				<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+			</PropertyGroup>
+		</When>
+	</Choose>
+
+
+	<!-- NuGet Packages -->
+	<ItemGroup>
+		<PackageReference Include="Andtech.Common" Version="0.18.1" />
+		<PackageReference Include="Andtech.TodoMD" Version="0.1.1" />
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+		<PackageReference Include="Crayon" Version="2.0.69" />
+		<PackageReference Include="Flurl" Version="3.0.7" />
+		<PackageReference Include="Flurl.Http" Version="3.2.4" />
+		<PackageReference Include="GitLabApiClient" Version="1.8.0" />
+		<PackageReference Include="YamlDotNet" Version="13.0.2" />
+	</ItemGroup>
+</Project>
+
