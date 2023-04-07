@@ -21,7 +21,6 @@ namespace Andtech.Ticket
 		public static async Task OnParseAsync(Options options)
 		{
 			Repository repository = null;
-			var userTable = new Dictionary<string, int>(1);
 
 			// Begin program
 			var requests = new List<CreateIssueRequest>();
@@ -47,10 +46,9 @@ namespace Andtech.Ticket
 						if (repository is null)
 						{
 							repository = await Session.Instance.GetRepositoryAsync();
-							userTable.Add("me", repository.UserID);
 						}
 
-						var request = ToRequest(task);
+						var request = await ToRequestAsync(task);
 						requests.Add(request);
 					}
 					else
@@ -58,9 +56,8 @@ namespace Andtech.Ticket
 						if (repository is null)
 						{
 							repository = await Session.Instance.GetRepositoryAsync();
-							userTable.Add("me", repository.UserID);
 						}
-						var request = ToRequest(task);
+						var request = await ToRequestAsync(task);
 
 						Log.WriteLine("Uploading to GitLab...", ConsoleColor.Cyan);
 						await UploadAsync(request);
@@ -84,11 +81,13 @@ namespace Andtech.Ticket
 				}
 			}
 
-			CreateIssueRequest ToRequest(TodoMD.Task task)
+			async Task<CreateIssueRequest> ToRequestAsync(TodoMD.Task task)
 			{
-				var assignees = task.Assignees
-					.Select(x => userTable[x])
-					.ToList();
+				var assignees = new List<int>(1);
+				foreach (var assignee in task.Assignees)
+				{
+					assignees.Add(await repository.GetUserIdAsync(assignee));
+				}
 
 				return new CreateIssueRequest(StringHelper.ToSentenceCase(task.Title))
 				{
