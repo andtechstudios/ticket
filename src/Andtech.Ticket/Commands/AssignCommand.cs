@@ -16,7 +16,7 @@ namespace Andtech.Ticket
 			[Value(0, HelpText = "Iid of the issue.")]
 			public string IssueId { get; set; }
 			[Value(1, HelpText = "Username of the new assignee.")]
-			public string AssigneeName { get; set; }
+			public string AssigneeName { get; set; } = "me";
 		}
 
 		public static async Task OnParseAsync(Options options)

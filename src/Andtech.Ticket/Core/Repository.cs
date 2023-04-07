@@ -1,15 +1,15 @@
-﻿using GitLabApiClient;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using GitLabApiClient;
 
 namespace Andtech.Ticket
 {
 
 	public class Repository
 	{
+		public int? UserID { get; set; }
+		public string? UserName { get; set; }
+		public int? ProjectID { get; set; }
 		public Host Host { get; private set; }
-		public int ProjectID { get; set; }
-		public int UserID { get; set; }
-		public bool IsGitConfigurationCorrect { get; set; }
 		public GitLabClient Client { get; set; }
 
 		private Dictionary<string, int> usersCache = new Dictionary<string, int>(1);
@@ -29,17 +29,19 @@ namespace Andtech.Ticket
 			};
 
 			repository.UserID = repository.GetConfigInt("ticket.userid");
+			repository.UserName = repository.GetConfigString("ticket.username");
 			repository.ProjectID = repository.GetConfigInt("ticket.projectid");
-			if (fetchMissingData && repository.ProjectID < 0)
+
+			if (fetchMissingData)
 			{
+				var apiSession = await repository.Client.Users.GetCurrentSessionAsync();
+				repository.UserID = apiSession.Id;
+				repository.UserName = apiSession.Username;
 				repository.ProjectID = await repository.GetProjectIDAsync();
 			}
-			if (fetchMissingData && repository.UserID < 0)
-			{
-				repository.UserID = await repository.GetCurrentUserIdAsync();
-			}
 
-			repository.usersCache.Add("me", repository.UserID);
+			repository.usersCache.Add("me", repository.UserID.Value);
+			repository.usersCache.Add(repository.UserName, repository.UserID.Value);
 
 			return repository;
 		}
@@ -69,7 +71,7 @@ namespace Andtech.Ticket
 				.Trim();
 		}
 
-		public int GetConfigInt(string key)
+		public int? GetConfigInt(string key)
 		{
 			var projectIdString = GitWrapper.Git($"config {key}")
 				.Trim();
@@ -87,12 +89,6 @@ namespace Andtech.Ticket
 			var url = GetRemoteUrl();
 			var pathWithNamespace = ParseProjectPathWithNamespace(url);
 			return await Client.FindProjectIDAsync(Host.access_token, pathWithNamespace);
-		}
-
-		public async Task<int> GetCurrentUserIdAsync()
-		{
-			var apiSession = await Client.Users.GetCurrentSessionAsync();
-			return apiSession.Id;
 		}
 
 		public async Task<int> GetUserIdAsync(string username)

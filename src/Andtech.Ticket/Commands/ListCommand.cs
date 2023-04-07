@@ -18,8 +18,8 @@ namespace Andtech.Ticket
 			public bool NoColor { get; set; }
 			[Option("dot-symbol", HelpText = "Use a custom dot symbal.")]
 			public string DotSymbol { get; set; }
-			[Option("me", HelpText = "Only show issues assigned to me.")]
-			public bool AssignedToMe { get; set; }
+			[Option('a', "all", HelpText = "Show issues related to all users.")]
+			public bool ShowAllUsers { get; set; }
 		}
 
 		public static async Task OnParseAsync(Options options)
@@ -45,7 +45,10 @@ namespace Andtech.Ticket
 			void SelectOnlyMyIssues(IssuesQueryOptions o)
 			{
 				var assignees = new List<string>(1);
-				if (options.AssignedToMe)
+				if (options.ShowAllUsers)
+				{
+				}
+				else
 				{
 					assignees.Add(apiSession.Username);
 				}
