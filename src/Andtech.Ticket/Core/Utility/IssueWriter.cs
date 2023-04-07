@@ -118,6 +118,10 @@ namespace Andtech.Ticket
 
 				var titleColumn = $"{issue.Title}";
 				Console.Write(titleColumn);
+				foreach (var assignee in issue.Assignees)
+				{
+					Console.Write(Bright.Black($" @{assignee.Username}"));
+				}
 				Console.WriteLine();
 			}
 		}

@@ -24,9 +24,9 @@ namespace Andtech.Ticket
 
 			// Begin program
 			var requests = new List<CreateIssueRequest>();
-			Console.WriteLine("Enter issue:");
 			while (true)
 			{
+				Console.Write("> ");
 				var line = Console.ReadLine();
 				if (string.IsNullOrEmpty(line))
 				{
@@ -61,13 +61,12 @@ namespace Andtech.Ticket
 
 						Log.WriteLine("Uploading to GitLab...", ConsoleColor.Cyan);
 						await UploadAsync(request);
-
-						Console.WriteLine();
 					}
 				}
 				catch (Exception ex)
 				{
-					Log.Error.WriteLine(ex);
+					Log.Error.WriteLine("An error occurred when creating the issue.", ConsoleColor.Red);
+					Log.Error.WriteLine(ex, Verbosity.verbose);
 				}
 			}
 

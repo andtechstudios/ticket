@@ -32,7 +32,6 @@ namespace Andtech.Ticket
 
 			var request = new UpdateIssueRequest()
 			{
-				State = UpdatedIssueState.Close,
 				Assignees = assigneeIds,
 			};
 			var issue = await repository.Client.Issues.UpdateAsync(repository.ProjectID, iid, request);
