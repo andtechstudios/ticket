@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Ticket": {
-      "commandName": "Project",
-      "commandLineArgs": "repl"
-    }
-  }
-}

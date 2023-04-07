@@ -6,6 +6,7 @@
 		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Configurations>Debug;Release;Linux</Configurations>
 	</PropertyGroup>
 
 	<!-- dotnet-tool -->
@@ -24,7 +25,7 @@
 
 	<!-- Linux development -->
 	<Choose>
-		<When Condition=" '$(Configuration)'=='Debug (Linux)' ">
+		<When Condition=" '$(Configuration)'=='Linux' ">
 			<PropertyGroup>
 				<RuntimeIdentifier>linux-x64</RuntimeIdentifier>
 			</PropertyGroup>
