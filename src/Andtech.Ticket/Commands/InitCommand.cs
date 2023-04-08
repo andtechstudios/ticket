@@ -15,34 +15,41 @@ namespace Andtech.Ticket
 		public static async Task OnParseAsync(Options options)
 		{
 			var repositoryActual = await Repository.LoadAsync(Session.Instance.Config, fetchMissingData: false);
-			var repositoryExpected = await Session.Instance.GetRepositoryAsync();
 
-			var hasUserID = repositoryActual.UserID.HasValue;
-			var hasUserName = !string.IsNullOrEmpty(repositoryActual.UserName);
+			var hasUserID = repositoryActual.User.Id.HasValue;
+			var hasUserName = !string.IsNullOrEmpty(repositoryActual.User.Name);
+			var hasUserDisplayName = !string.IsNullOrEmpty(repositoryActual.User.DisplayName);
 			var hasProjectID = repositoryActual.ProjectID.HasValue;
 
 			var checkmark = Green("✓");
 			var x = Red("✘");
 			Console.WriteLine($"User ID: " + (hasUserID ? checkmark : x));
 			Console.WriteLine($"User Name: " + (hasUserName ? checkmark : x));
+			Console.WriteLine($"User Display Name: " + (hasUserDisplayName ? checkmark : x));
 			Console.WriteLine($"Project ID: " + (hasProjectID ? checkmark : x));
 
-			if (!hasUserID || !hasUserName || !hasProjectID)
+			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID)
 			{
+				var repositoryExpected = await Session.Instance.GetRepositoryAsync();
+
 				Console.WriteLine();
 				Console.WriteLine("Run the following:");
-			}
-			if (!hasUserID)
-			{
-				Console.WriteLine($"	git config --global ticket.userid {repositoryExpected.UserID}");
-			}
-			if (!hasUserName)
-			{
-				Console.WriteLine($"	git config ticket.username {repositoryExpected.UserName}");
-			}
-			if (!hasProjectID)
-			{
-				Console.WriteLine($"	git config ticket.projectid {repositoryExpected.ProjectID}");
+				if (!hasUserID)
+				{
+					Console.WriteLine($"	git config --global ticket.userid {repositoryExpected.User.Id}");
+				}
+				if (!hasUserName)
+				{
+					Console.WriteLine($"	git config ticket.username {repositoryExpected.User.Name}");
+				}
+				if (!hasUserDisplayName)
+				{
+					Console.WriteLine($"	git config ticket.displayname {repositoryExpected.User.DisplayName}");
+				}
+				if (!hasProjectID)
+				{
+					Console.WriteLine($"	git config ticket.projectid {repositoryExpected.ProjectID}");
+				}
 			}
 		}
 	}

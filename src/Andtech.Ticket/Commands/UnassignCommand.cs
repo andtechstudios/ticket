@@ -1,22 +1,19 @@
 ﻿using Andtech.Common;
 using Andtech.Ticket.Core;
 using CommandLine;
-using GitLabApiClient.Internal.Paths;
 using GitLabApiClient.Models.Issues.Requests;
 
 namespace Andtech.Ticket
 {
 
-	public class AssignCommand
+	public class UnassignCommand
 	{
 
-		[Verb("assign", HelpText = "Assign issues.")]
+		[Verb("unassign", HelpText = "Unassign issues.")]
 		public class Options : BaseOptions
 		{
 			[Value(0, HelpText = "Iid of the issue.")]
 			public string IssueId { get; set; }
-			[Value(1, HelpText = "Username of the new assignee.")]
-			public string AssigneeName { get; set; } = "me";
 		}
 
 		public static async Task OnParseAsync(Options options)
@@ -25,10 +22,9 @@ namespace Andtech.Ticket
 
 			var iidString = options.IssueId.TrimStart('#');
 			int iid = int.Parse(iidString);
-			var user = await repository.GetUserAsync(options.AssigneeName);
-			var assigneeIds = new List<int>(1)
+			var assigneeIds = new List<int>()
 			{
-				user.Id.Value,
+				0,
 			};
 
 			var request = new UpdateIssueRequest()
@@ -38,7 +34,7 @@ namespace Andtech.Ticket
 			var issue = await repository.Client.Issues.UpdateAsync(repository.ProjectID, iid, request);
 
 			var iidText = Macros.TerminalURL($"#{iid}", issue.WebUrl);
-			Log.WriteLine($"Assigned issue {iidText} to @{user.Name}!", ConsoleColor.Green);
+			Log.WriteLine($"Cleared assignees from issue {iidText}!", ConsoleColor.Green);
 		}
 	}
 }

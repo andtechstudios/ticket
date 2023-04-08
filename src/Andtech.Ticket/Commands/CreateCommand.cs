@@ -85,7 +85,7 @@ namespace Andtech.Ticket
 				var assignees = new List<int>(1);
 				foreach (var assignee in task.Assignees)
 				{
-					assignees.Add(await repository.GetUserIdAsync(assignee));
+					assignees.Add((await repository.GetUserAsync(assignee)).Id.Value);
 				}
 
 				return new CreateIssueRequest(StringHelper.ToSentenceCase(task.Title))

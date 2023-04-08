@@ -1,18 +1,25 @@
 ﻿using System.Text.RegularExpressions;
+using Flurl.Util;
 using GitLabApiClient;
 
 namespace Andtech.Ticket
 {
 
+	public struct User
+	{
+		public int? Id { get; set; }
+		public string? Name { get; set; }
+		public string? DisplayName { get; set; }
+	}
+
 	public class Repository
 	{
-		public int? UserID { get; set; }
-		public string? UserName { get; set; }
-		public int? ProjectID { get; set; }
+		public User User { get; private set; }
+		public int? ProjectID { get; private set; }
 		public Host Host { get; private set; }
 		public GitLabClient Client { get; set; }
 
-		private Dictionary<string, int> usersCache = new Dictionary<string, int>(1);
+		private Dictionary<string, User> usersCache = new Dictionary<string, User>(1);
 
 		public static async Task<Repository> LoadAsync(Config config, bool fetchMissingData = true)
 		{
@@ -28,20 +35,31 @@ namespace Andtech.Ticket
 				Client = client,
 			};
 
-			repository.UserID = repository.GetConfigInt("ticket.userid");
-			repository.UserName = repository.GetConfigString("ticket.username");
+			repository.User = new User()
+			{
+				Id = repository.GetConfigInt("ticket.userid"),
+				Name = repository.GetConfigString("ticket.username"),
+				DisplayName = repository.GetConfigString("ticket.displayname"),
+			};
 			repository.ProjectID = repository.GetConfigInt("ticket.projectid");
 
 			if (fetchMissingData)
 			{
 				var apiSession = await repository.Client.Users.GetCurrentSessionAsync();
-				repository.UserID = apiSession.Id;
-				repository.UserName = apiSession.Username;
+				repository.User = new User()
+				{
+					Id = apiSession.Id,
+					Name = apiSession.Username,
+					DisplayName = apiSession.Name,
+				};
 				repository.ProjectID = await repository.GetProjectIDAsync();
 			}
 
-			repository.usersCache.Add("me", repository.UserID.Value);
-			repository.usersCache.Add(repository.UserName, repository.UserID.Value);
+			if (!string.IsNullOrEmpty(repository.User.Name))
+			{
+				repository.usersCache.Add(repository.User.Name, repository.User);
+				repository.usersCache.Add("me", repository.User);
+			}
 
 			return repository;
 		}
@@ -91,17 +109,23 @@ namespace Andtech.Ticket
 			return await Client.FindProjectIDAsync(Host.access_token, pathWithNamespace);
 		}
 
-		public async Task<int> GetUserIdAsync(string username)
+		public async Task<User> GetUserAsync(string username)
 		{
-			if (usersCache.TryGetValue(username, out var userId))
+			if (usersCache.TryGetValue(username, out var user))
 			{
-				return userId;
+				return user;
 			}
 
-			var user = await Client.Users.GetAsync(username);
-			usersCache.Add(username, user.Id);
+			var u = await Client.Users.GetAsync(username);
+			user = new User()
+			{
+				Id = u.Id,
+				Name = u.Username,
+				DisplayName = u.Name,
+			};
+			usersCache.Add(username, user);
 
-			return user.Id;
+			return user;
 		}
 	}
 }

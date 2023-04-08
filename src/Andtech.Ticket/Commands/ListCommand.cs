@@ -27,7 +27,6 @@ namespace Andtech.Ticket
 			var repository = await Session.Instance.GetRepositoryAsync();
 			var client = repository.Client;
 
-			var apiSession = await client.Users.GetCurrentSessionAsync();
 			var issues = await client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
 			if (issues.Count == 0)
 			{
@@ -50,7 +49,7 @@ namespace Andtech.Ticket
 				}
 				else
 				{
-					assignees.Add(apiSession.Username);
+					assignees.Add(repository.User.Name);
 				}
 
 				o.AssigneeUsername = assignees;

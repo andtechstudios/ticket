@@ -4,7 +4,7 @@ using CommandLine;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-var result = Parser.Default.ParseArguments<InitCommand.Options, ListCommand.Options, CreateCommand.Options, AssignCommand.Options, CloseCommand.Options>(args);
+var result = Parser.Default.ParseArguments<InitCommand.Options, ListCommand.Options, CreateCommand.Options, AssignCommand.Options, UnassignCommand.Options, CloseCommand.Options>(args);
 await result.WithParsedAsync<BaseOptions>(PreParse);
 await result
 	.WithParsedAsync<InitCommand.Options>(InitCommand.OnParseAsync);
@@ -14,6 +14,8 @@ await result
 	.WithParsedAsync<CreateCommand.Options>(CreateCommand.OnParseAsync);
 await result
 	.WithParsedAsync<AssignCommand.Options>(AssignCommand.OnParseAsync);
+await result
+	.WithParsedAsync<UnassignCommand.Options>(UnassignCommand.OnParseAsync);
 await result
 	.WithParsedAsync<CloseCommand.Options>(CloseCommand.OnParseAsync);
 
