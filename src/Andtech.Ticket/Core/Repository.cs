@@ -16,18 +16,31 @@ namespace Andtech.Ticket
 	{
 		public User User { get; private set; }
 		public int? ProjectID { get; private set; }
+		public string ProjectUrl { get; private set; }
 		public Host Host { get; private set; }
 		public GitLabClient Client { get; set; }
+		public bool IsConfigured
+		{
+			get
+			{
+				return User.Id >= 0
+					&& !string.IsNullOrEmpty(User.Name)
+					&& !string.IsNullOrEmpty(User.DisplayName)
+					&& ProjectID >= 0
+					&& !string.IsNullOrEmpty(ProjectUrl);
+			}
+		}
 
 		private Dictionary<string, User> usersCache = new Dictionary<string, User>(1);
 
-		public static async Task<Repository> LoadAsync(Config config, bool fetchMissingData = true)
+		public static async Task<Repository> LoadAsync(Config config, bool fetchMissingData = false)
 		{
-			var url = GetRemoteUrl();
-			var host = config.hosts
-				.First(x => url.Contains(x.hostname));
-			var hostUrl = "https://" + host.hostname;
-			var client = new GitLabClient(hostUrl, host.access_token);
+			var remoteUrl = GetRemoteUrl();
+            var pathWithNamespace = ParseProjectPathWithNamespace(remoteUrl);
+            var host = config.hosts
+				.First(x => remoteUrl.Contains(x.hostname));
+			var gitlabUrl = "https://" + host.hostname;
+			var client = new GitLabClient(gitlabUrl, host.access_token);
 
 			var repository = new Repository()
 			{
@@ -42,17 +55,21 @@ namespace Andtech.Ticket
 				DisplayName = repository.GetConfigString("ticket.displayname"),
 			};
 			repository.ProjectID = repository.GetConfigInt("ticket.projectid");
+            repository.ProjectUrl = repository.GetConfigString("ticket.projecturl");
 
-			if (fetchMissingData)
+            if (fetchMissingData)
 			{
 				var apiSession = await repository.Client.Users.GetCurrentSessionAsync();
+
 				repository.User = new User()
 				{
 					Id = apiSession.Id,
 					Name = apiSession.Username,
 					DisplayName = apiSession.Name,
 				};
-				repository.ProjectID = await repository.GetProjectIDAsync();
+
+                repository.ProjectID = await repository.Client.FindProjectIDAsync(repository.Host.access_token, pathWithNamespace);
+				repository.ProjectUrl = Path.Combine($"https://{repository.Host.hostname}", pathWithNamespace);
 			}
 
 			if (!string.IsNullOrEmpty(repository.User.Name))
@@ -100,13 +117,6 @@ namespace Andtech.Ticket
 			}
 
 			return -1;
-		}
-
-		public async Task<int> GetProjectIDAsync()
-		{
-			var url = GetRemoteUrl();
-			var pathWithNamespace = ParseProjectPathWithNamespace(url);
-			return await Client.FindProjectIDAsync(Host.access_token, pathWithNamespace);
 		}
 
 		public async Task<User> GetUserAsync(string username)

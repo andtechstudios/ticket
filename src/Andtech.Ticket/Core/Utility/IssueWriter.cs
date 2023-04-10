@@ -44,7 +44,7 @@ namespace Andtech.Ticket
 				var padding = string.Concat(Enumerable.Repeat(" ", paddingLength));
 				var caption = $"#{issue.Iid}";
 
-				var text = Macros.TerminalURL(caption, issue.WebUrl);
+				var text = Macros.TerminalLink(caption, issue.WebUrl);
 				text = padding + text;
 
 				var iidColumn = $"{text} ";

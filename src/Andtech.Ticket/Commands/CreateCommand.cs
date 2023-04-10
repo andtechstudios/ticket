@@ -9,7 +9,7 @@ namespace Andtech.Ticket
 	public class CreateCommand
 	{
 
-		[Verb("create", isDefault: true, aliases: new string[] { "new", "open" }, HelpText = "Create new issues.")]
+		[Verb("create", isDefault: true, aliases: new string[] { "new" }, HelpText = "Create new issues.")]
 		public class Options : BaseOptions
 		{
 			[Option("me", HelpText = "Assign all issues to yourself")]
@@ -100,7 +100,7 @@ namespace Andtech.Ticket
 			async Task UploadAsync(CreateIssueRequest request)
 			{
 				var issue = await repository.Client.Issues.CreateAsync(repository.ProjectID, request);
-				var issueText = Macros.TerminalURL($"#{issue.Iid}", issue.WebUrl);
+				var issueText = Macros.TerminalLink($"#{issue.Iid}", issue.WebUrl);
 				Console.WriteLine(Bright.Green($"Issue {issueText} was created successfully!"));
 			}
 		}

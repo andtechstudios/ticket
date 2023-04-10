@@ -20,8 +20,7 @@ namespace Andtech.Ticket
 		{
 			var repository = await Session.Instance.GetRepositoryAsync();
 
-			var iidString = options.IssueId.TrimStart('#');
-			int iid = int.Parse(iidString);
+			int iid = Macros.ParseIssue(options.IssueId);
 			var assigneeIds = new List<int>()
 			{
 				0,
@@ -33,7 +32,7 @@ namespace Andtech.Ticket
 			};
 			var issue = await repository.Client.Issues.UpdateAsync(repository.ProjectID, iid, request);
 
-			var iidText = Macros.TerminalURL($"#{iid}", issue.WebUrl);
+			var iidText = Macros.TerminalLink($"#{iid}", issue.WebUrl);
 			Log.WriteLine($"Cleared assignees from issue {iidText}!", ConsoleColor.Green);
 		}
 	}

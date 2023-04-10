@@ -23,8 +23,7 @@ namespace Andtech.Ticket
 			{
 				try
 				{
-					var iidString = issueString.TrimStart('#');
-					int iid = int.Parse(iidString);
+					int iid = Macros.ParseIssue(issueString);
 
 					var request = new UpdateIssueRequest()
 					{
@@ -32,7 +31,7 @@ namespace Andtech.Ticket
 					};
 					var issue = await repository.Client.Issues.UpdateAsync(repository.ProjectID, iid, request);
 
-					var iidText = Macros.TerminalURL($"#{iid}", issue.WebUrl);
+					var iidText = Macros.TerminalLink($"#{iid}", issue.WebUrl);
 					Log.WriteLine($"Closed issue {iidText} successfully!", ConsoleColor.Green);
 				}
 				catch
