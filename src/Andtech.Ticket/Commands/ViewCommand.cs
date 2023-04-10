@@ -42,7 +42,7 @@ namespace Andtech.Ticket
                         var iid = Macros.ParseIssue(issueString);
                         var issue = await repository.Client.Issues.GetAsync(repository.ProjectID, iid);
 
-                        var issueText = Bright.Cyan($"#{Macros.TerminalLink(issue.Iid.ToString(), issue.WebUrl)}");
+                        var issueText = Bright.Cyan(Macros.TerminalLink($"#{issue.Iid}", issue.WebUrl));
                         Log.WriteLine($"{issueText} {Bold(issue.Title)}");
                         if (!string.IsNullOrEmpty(issue.Description))
                         {
