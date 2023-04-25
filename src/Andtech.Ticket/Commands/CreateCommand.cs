@@ -24,11 +24,33 @@ namespace Andtech.Ticket
 
 			// Begin program
 			var requests = new List<CreateIssueRequest>();
+
+			var loadTask = Session.Instance.GetRepositoryAsync();
+
+			async Task<string> PromptAsync()
+            {
+                Console.Write("> ");
+                var line = Console.ReadLine();
+				return line;
+            }
+
+            async Task RequireClientAsync()
+            {
+				if (repository is null)
+				{
+                    repository = await Session.Instance.GetRepositoryAsync();
+                    await repository.Client.Users.GetCurrentSessionAsync();
+                }
+            }
+
 			while (true)
 			{
-				Console.Write("> ");
-				var line = Console.ReadLine();
-				if (string.IsNullOrEmpty(line))
+				var promptTask = Task.Run(PromptAsync);
+                var requireTask = Task.Run(RequireClientAsync);
+                Task.WaitAll(promptTask, requireTask);
+
+				var line = promptTask.Result;
+                if (string.IsNullOrEmpty(line))
 				{
 					break;
 				}
@@ -43,20 +65,11 @@ namespace Andtech.Ticket
 
 					if (options.BulkMode)
 					{
-						if (repository is null)
-						{
-							repository = await Session.Instance.GetRepositoryAsync();
-						}
-
 						var request = await ToRequestAsync(task);
 						requests.Add(request);
 					}
 					else
 					{
-						if (repository is null)
-						{
-							repository = await Session.Instance.GetRepositoryAsync();
-						}
 						var request = await ToRequestAsync(task);
 
 						Log.WriteLine("Uploading to GitLab...", ConsoleColor.Cyan);
