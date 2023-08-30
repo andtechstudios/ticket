@@ -7,7 +7,7 @@ namespace Andtech.Ticket
 	public class InitCommand
 	{
 
-		[Verb("init", HelpText = "Initialize the Ticket integration for this repository.")]
+		[Verb("init", HelpText = "Initialize this repository.")]
 		public class Options : BaseOptions
 		{
 		}
@@ -15,36 +15,42 @@ namespace Andtech.Ticket
 		public static async Task OnParseAsync(Options options)
 		{
 			var repositoryActual = await Repository.LoadAsync(Session.Instance.Config, fetchMissingData: false);
-            var repositoryExpected = await Repository.LoadAsync(Session.Instance.Config, fetchMissingData: true);
 
-            var commands = new List<string>();
-            void Check<T>(T actual, T expected, string key, string displayName)
-            {
-				if (actual.Equals(expected))
-                {
-                    Console.WriteLine(Bright.Green("✓") + $" {displayName}");
-                }
-				else
-                {
-                    commands.Add($"{key} {expected}");
-                    Console.WriteLine(Bright.Red("✘") + $" {displayName}");
-                }
-            }
+			var hasUserID = repositoryActual.User.Id.HasValue;
+			var hasUserName = !string.IsNullOrEmpty(repositoryActual.User.Name);
+			var hasUserDisplayName = !string.IsNullOrEmpty(repositoryActual.User.DisplayName);
+			var hasProjectID = repositoryActual.ProjectID.HasValue;
 
-            Check(repositoryActual.User.Id, repositoryExpected.User.Id, "ticket.userid", "User ID");
-            Check(repositoryActual.User.Name, repositoryExpected.User.Name, "ticket.username", "User Name");
-            Check(repositoryActual.User.DisplayName, repositoryExpected.User.DisplayName, "ticket.displayname", "User Display Name");
-            Check(repositoryActual.ProjectID, repositoryExpected.ProjectID, "ticket.projectid", "Project ID");
-            Check(repositoryActual.ProjectUrl, repositoryExpected.ProjectUrl, "ticket.projecturl", "Project URL");
+			var checkmark = Green("✓");
+			var x = Red("✘");
+			Console.WriteLine($"User ID: " + (hasUserID ? checkmark : x));
+			Console.WriteLine($"User Name: " + (hasUserName ? checkmark : x));
+			Console.WriteLine($"User Display Name: " + (hasUserDisplayName ? checkmark : x));
+			Console.WriteLine($"Project ID: " + (hasProjectID ? checkmark : x));
 
-			if (commands.Count > 0)
-            {
-                Console.WriteLine("Run the following shell command(s):");
-                foreach (var command in commands)
-                {
-                    Console.WriteLine($"	git config {command}");
-                }
-            }
+			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID)
+			{
+				var repositoryExpected = await Session.Instance.GetRepositoryAsync();
+
+				Console.WriteLine();
+				Console.WriteLine("Run the following:");
+				if (!hasUserID)
+				{
+					Console.WriteLine($"	git config --global ticket.userid {repositoryExpected.User.Id}");
+				}
+				if (!hasUserName)
+				{
+					Console.WriteLine($"	git config --global ticket.username {repositoryExpected.User.Name}");
+				}
+				if (!hasUserDisplayName)
+				{
+					Console.WriteLine($"	git config --global ticket.displayname {repositoryExpected.User.DisplayName}");
+				}
+				if (!hasProjectID)
+				{
+					Console.WriteLine($"	git config ticket.projectid {repositoryExpected.ProjectID}");
+				}
+			}
 		}
 	}
 }
