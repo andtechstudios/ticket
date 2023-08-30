@@ -2,6 +2,7 @@
 using Andtech.Ticket.Core;
 using CommandLine;
 using GitLabApiClient.Models.Issues.Requests;
+using GitLabApiClient.Models.Issues.Responses;
 
 namespace Andtech.Ticket
 {
@@ -20,6 +21,8 @@ namespace Andtech.Ticket
 			public string DotSymbol { get; set; }
 			[Option('a', "all", HelpText = "Show issues related to all users.")]
 			public bool ShowAllUsers { get; set; }
+			[Option("backlog", HelpText = "Include issues with label 'backlog'.")]
+			public bool IncludeBacklog { get; set; }
 		}
 
 		public static async Task OnParseAsync(Options options)
@@ -27,8 +30,8 @@ namespace Andtech.Ticket
 			var repository = await Session.Instance.GetRepositoryAsync();
 			var client = repository.Client;
 
-			var issues = await client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
-			if (issues.Count == 0)
+			IEnumerable<Issue> issues = await client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
+			if (issues.Count() == 0)
 			{
 				Log.WriteLine("No assigned tickets");
 			}
@@ -38,6 +41,12 @@ namespace Andtech.Ticket
 				var writer = new IssueWriter(labels);
 				writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
 				writer.UseColor = !options.NoColor;
+
+				if (!options.IncludeBacklog)
+				{
+					issues = issues.Where(x => !x.Labels.Contains("backlog"));
+				}
+
 				writer.Print(issues, options.AlignLabels);
 			}
 
