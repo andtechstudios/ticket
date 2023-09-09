@@ -1,4 +1,5 @@
-﻿using Andtech.Ticket.Core;
+﻿using Andtech.Common;
+using Andtech.Ticket.Core;
 using CommandLine;
 using static Crayon.Output;
 
@@ -30,7 +31,7 @@ namespace Andtech.Ticket
 
 			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID)
 			{
-				var repositoryExpected = await Session.Instance.GetRepositoryAsync();
+				var repositoryExpected = await Session.Instance.GetRepositoryAsync(fetchMissingData: true);
 
 				Console.WriteLine();
 				Console.WriteLine("Run the following:");

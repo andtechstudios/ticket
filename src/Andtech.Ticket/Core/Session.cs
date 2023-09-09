@@ -4,7 +4,7 @@ using Andtech.Common;
 namespace Andtech.Ticket.Core
 {
 
-    public class Session
+	public class Session
 	{
 		public Config Config { get; set; }
 
@@ -15,11 +15,11 @@ namespace Andtech.Ticket.Core
 			var repository = await Repository.LoadAsync(Config, fetchMissingData: fetchMissingData);
 			if (!repository.IsConfigured)
 			{
-                throw new TicketConfigurationException("Repository not configured.");
+				throw new TicketConfigurationException("Repository not configured.");
 
-            }
+			}
 
-            return repository;
+			return repository;
 		}
 	}
 }
