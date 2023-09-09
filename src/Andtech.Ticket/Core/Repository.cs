@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using Flurl.Util;
+using Andtech.Common;
 using GitLabApiClient;
 
 namespace Andtech.Ticket
@@ -36,9 +36,9 @@ namespace Andtech.Ticket
 		public static async Task<Repository> LoadAsync(Config config, bool fetchMissingData = false)
 		{
 			var remoteUrl = GetRemoteUrl();
-            var pathWithNamespace = ParseProjectPathWithNamespace(remoteUrl);
-            var host = config.hosts
-				.First(x => remoteUrl.Contains(x.hostname));
+			var pathWithNamespace = ParseProjectPathWithNamespace(remoteUrl);
+			var host = config.hosts
+			.First(x => remoteUrl.Contains(x.hostname));
 			var gitlabUrl = "https://" + host.hostname;
 			var client = new GitLabClient(gitlabUrl, host.access_token);
 
@@ -55,9 +55,9 @@ namespace Andtech.Ticket
 				DisplayName = repository.GetConfigString("ticket.displayname"),
 			};
 			repository.ProjectID = repository.GetConfigInt("ticket.projectid");
-            repository.ProjectUrl = repository.GetConfigString("ticket.projecturl");
+			repository.ProjectUrl = repository.GetConfigString("ticket.projecturl");
 
-            if (fetchMissingData)
+			if (fetchMissingData)
 			{
 				var apiSession = await repository.Client.Users.GetCurrentSessionAsync();
 
@@ -68,7 +68,7 @@ namespace Andtech.Ticket
 					DisplayName = apiSession.Name,
 				};
 
-                repository.ProjectID = await repository.Client.FindProjectIDAsync(repository.Host.access_token, pathWithNamespace);
+				repository.ProjectID = await repository.Client.FindProjectIDAsync(repository.Host.access_token, pathWithNamespace);
 				repository.ProjectUrl = Path.Combine($"https://{repository.Host.hostname}", pathWithNamespace);
 			}
 

@@ -21,6 +21,7 @@ namespace Andtech.Ticket
 			var hasUserName = !string.IsNullOrEmpty(repositoryActual.User.Name);
 			var hasUserDisplayName = !string.IsNullOrEmpty(repositoryActual.User.DisplayName);
 			var hasProjectID = repositoryActual.ProjectID.HasValue;
+			var hasProjectUrl = !string.IsNullOrEmpty(repositoryActual.ProjectUrl);
 
 			var checkmark = Green("✓");
 			var x = Red("✘");
@@ -29,7 +30,7 @@ namespace Andtech.Ticket
 			Console.WriteLine($"User Display Name: " + (hasUserDisplayName ? checkmark : x));
 			Console.WriteLine($"Project ID: " + (hasProjectID ? checkmark : x));
 
-			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID)
+			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID || !hasProjectUrl)
 			{
 				var repositoryExpected = await Session.Instance.GetRepositoryAsync(fetchMissingData: true);
 
@@ -50,6 +51,10 @@ namespace Andtech.Ticket
 				if (!hasProjectID)
 				{
 					Console.WriteLine($"	git config ticket.projectid {repositoryExpected.ProjectID}");
+				}
+				if (!hasProjectUrl)
+				{
+					Console.WriteLine($"	git config ticket.projecturl {repositoryExpected.ProjectUrl}");
 				}
 			}
 		}

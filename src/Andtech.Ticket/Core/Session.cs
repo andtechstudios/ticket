@@ -16,7 +16,6 @@ namespace Andtech.Ticket.Core
 			if (!repository.IsConfigured)
 			{
 				throw new TicketConfigurationException("Repository not configured.");
-
 			}
 
 			return repository;

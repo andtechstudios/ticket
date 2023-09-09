@@ -30,14 +30,19 @@ namespace Andtech.Ticket
 			var repository = await Session.Instance.GetRepositoryAsync();
 			var client = repository.Client;
 
-			IEnumerable<Issue> issues = await client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
+			var issuesTask = client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
+			var labelsTask = client.Projects.GetLabelsAsync(repository.ProjectID);
+
+			await Task.WhenAll(issuesTask, labelsTask);
+
+			IEnumerable<Issue> issues = issuesTask.Result;
 			if (issues.Count() == 0)
 			{
-				Log.WriteLine("No assigned tickets");
+				Log.WriteLine("No assigned issues");
 			}
 			else
 			{
-				var labels = await client.Projects.GetLabelsAsync(repository.ProjectID);
+				var labels = labelsTask.Result;
 				var writer = new IssueWriter(labels);
 				writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
 				writer.UseColor = !options.NoColor;
