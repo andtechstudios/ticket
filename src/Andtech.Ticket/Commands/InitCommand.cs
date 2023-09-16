@@ -29,6 +29,7 @@ namespace Andtech.Ticket
 			Console.WriteLine($"User Name: " + (hasUserName ? checkmark : x));
 			Console.WriteLine($"User Display Name: " + (hasUserDisplayName ? checkmark : x));
 			Console.WriteLine($"Project ID: " + (hasProjectID ? checkmark : x));
+			Console.WriteLine($"Project URL: " + (hasProjectUrl ? checkmark : x));
 
 			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID || !hasProjectUrl)
 			{
