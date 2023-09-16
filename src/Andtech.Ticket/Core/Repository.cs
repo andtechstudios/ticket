@@ -116,7 +116,7 @@ namespace Andtech.Ticket
 				return value;
 			}
 
-			return -1;
+			return null;
 		}
 
 		public async Task<User> GetUserAsync(string username)
