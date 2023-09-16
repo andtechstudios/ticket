@@ -25,11 +25,11 @@ namespace Andtech.Ticket
 
 			var checkmark = Green("✓");
 			var x = Red("✘");
-			Console.WriteLine($"User ID: " + (hasUserID ? checkmark : x));
-			Console.WriteLine($"User Name: " + (hasUserName ? checkmark : x));
-			Console.WriteLine($"User Display Name: " + (hasUserDisplayName ? checkmark : x));
-			Console.WriteLine($"Project ID: " + (hasProjectID ? checkmark : x));
-			Console.WriteLine($"Project URL: " + (hasProjectUrl ? checkmark : x));
+			Console.WriteLine($"{(hasUserID ? checkmark : x)} User ID");
+			Console.WriteLine($"{(hasUserName? checkmark : x)} User Name");
+			Console.WriteLine($"{(hasUserDisplayName ? checkmark : x)} User Display Name");
+			Console.WriteLine($"{(hasProjectID ? checkmark : x)} Project ID");
+			Console.WriteLine($"{(hasProjectUrl ? checkmark : x)} Project URL");
 
 			if (!hasUserID || !hasUserDisplayName || !hasUserDisplayName || !hasProjectID || !hasProjectUrl)
 			{
