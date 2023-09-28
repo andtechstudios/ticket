@@ -2,7 +2,7 @@
 
 public class BaseOptions
 {
-	[Option("cache", HelpText = "Skip HTTP.")]
+	[Option("cache", Default = true, HelpText = "Skip HTTP.")]
 	public bool Cache { get; set; }
 	[Option("no-cache", HelpText = "Require HTTP.")]
 	public bool NoCache { get; set; }
