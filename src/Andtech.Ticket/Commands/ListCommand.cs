@@ -105,9 +105,6 @@ namespace Andtech.Ticket
 
 				Cache.Write(cache);
 			}
-
-			var first = allIssues.OrderBy(x => x.Id).Skip(2).First();
-			var json = JsonSerializer.Serialize(first);
 		}
 	}
 }

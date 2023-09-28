@@ -6,6 +6,7 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 var result = Parser.Default.ParseArguments<
+	FetchCommand.Options	,
 	InitCommand.Options,
 	ListCommand.Options,
 	CreateCommand.Options,
