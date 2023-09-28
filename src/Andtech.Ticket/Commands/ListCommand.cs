@@ -1,16 +1,25 @@
-﻿using Andtech.Common;
+﻿using System.Text.Json;
+using Andtech.Common;
 using Andtech.Ticket.Core;
 using CommandLine;
 using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
+using GitLabApiClient.Models.Projects.Responses;
 
 namespace Andtech.Ticket
 {
 
+	[Serializable]
+	public class Cache
+	{
+		public Issue[] issues { get; set; }
+		public Label[] labels { get; set; }
+	}
+
 	public class ListCommand
 	{
 
-		[Verb("list",  aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
+		[Verb("list", aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
 		public class Options : BaseOptions
 		{
 			[Option("align-labels", HelpText = "Align all label dots when printed.")]
@@ -27,47 +36,67 @@ namespace Andtech.Ticket
 
 		public static async Task OnParseAsync(Options options)
 		{
-			var repository = await Session.Instance.GetRepositoryAsync();
-			var client = repository.Client;
+			var useCache = options.UseCache;
+			var cachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".ticket");
 
-			var issuesTask = client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
-			var labelsTask = client.Projects.GetLabelsAsync(repository.ProjectID);
+			IEnumerable<Issue> issues = null;
+			IEnumerable<Label> labels = null;
 
-			await Task.WhenAll(issuesTask, labelsTask);
+			if (options.UseCache)
+			{
+				try
+				{
+					var json = File.ReadAllText(cachePath);
+					var deserialized = JsonSerializer.Deserialize<Cache>(json);
+					issues = deserialized.issues;
+					labels = deserialized.labels;
+				}
+				catch
+				{
 
-			IEnumerable<Issue> issues = issuesTask.Result;
+				}
+			}
+
+			if (issues is null)
+			{
+				var repository = await Session.Instance.GetRepositoryAsync();
+				var client = repository.Client;
+
+				var issuesTask = client.Issues.GetAllAsync(repository.ProjectID);
+				var labelsTask = client.Projects.GetLabelsAsync(repository.ProjectID);
+
+				await Task.WhenAll(issuesTask, labelsTask);
+
+				issues = issuesTask.Result;
+				labels = labelsTask.Result;
+			}
+
 			if (issues.Count() == 0)
 			{
 				Log.WriteLine("No assigned issues");
+				return;
 			}
-			else
+
+			var writer = new IssueWriter(labels);
+			writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
+			writer.UseColor = !options.NoColor;
+
+			if (!options.IncludeBacklog)
 			{
-				var labels = labelsTask.Result;
-				var writer = new IssueWriter(labels);
-				writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
-				writer.UseColor = !options.NoColor;
-
-				if (!options.IncludeBacklog)
-				{
-					issues = issues.Where(x => !x.Labels.Contains("backlog"));
-				}
-
-				writer.Print(issues, options.AlignLabels);
+				issues = issues.Where(x => !x.Labels.Contains("backlog"));
 			}
 
-			void SelectOnlyMyIssues(IssuesQueryOptions o)
+			writer.Print(issues, options.AlignLabels);
+
+			// Write cache
+			var cache = new Cache()
 			{
-				var assignees = new List<string>(1);
-				if (options.ShowAllUsers)
-				{
-				}
-				else
-				{
-					assignees.Add(repository.User.Name);
-				}
+				issues = issues.ToArray(),
+				labels = labels.ToArray(),
+			};
 
-				o.AssigneeUsername = assignees;
-			}
+			string jsonString = JsonSerializer.Serialize(cache);
+			File.WriteAllText(cachePath, jsonString);
 		}
 	}
 }
