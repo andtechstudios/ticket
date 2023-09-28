@@ -1,7 +1,7 @@
-﻿using Andtech.Common;
+﻿using System.Text.Json;
+using Andtech.Common;
 using Andtech.Ticket.Core;
 using CommandLine;
-using GitLabApiClient.Models.Issues.Requests;
 using GitLabApiClient.Models.Issues.Responses;
 
 namespace Andtech.Ticket
@@ -10,7 +10,7 @@ namespace Andtech.Ticket
 	public class ListCommand
 	{
 
-		[Verb("list",  aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
+		[Verb("list", aliases: new string[] { "ls" }, HelpText = "List issues.", Hidden = true)]
 		public class Options : BaseOptions
 		{
 			[Option("align-labels", HelpText = "Align all label dots when printed.")]
@@ -27,47 +27,87 @@ namespace Andtech.Ticket
 
 		public static async Task OnParseAsync(Options options)
 		{
-			var repository = await Session.Instance.GetRepositoryAsync();
-			var client = repository.Client;
+			IEnumerable<Issue> allIssues = null;
+			IEnumerable<GitLabApiClient.Models.Projects.Responses.Label> labels = null;
 
-			var issuesTask = client.Issues.GetAllAsync(repository.ProjectID, options: SelectOnlyMyIssues);
-			var labelsTask = client.Projects.GetLabelsAsync(repository.ProjectID);
+			bool cacheAvailable = TryLoadFromCache();
 
-			await Task.WhenAll(issuesTask, labelsTask);
+			bool TryLoadFromCache()
+			{
+				if (!options.UseCache)
+				{
+					return false;
+				}
 
-			IEnumerable<Issue> issues = issuesTask.Result;
-			if (issues.Count() == 0)
+				var cache = Cache.Load();
+				if (cache is null)
+				{
+					return false;
+				}
+
+				var timespan = DateTime.UtcNow - cache.timestamp;
+				if (timespan > TimeSpan.FromHours(3))
+				{
+					return false;
+				}
+
+				allIssues = cache.issues;
+				labels = cache.labels;
+				return true;
+			}
+
+			var repository = await Session.Instance.GetRepositoryAsync(!cacheAvailable);
+
+			if (!cacheAvailable)
+			{
+				var client = repository.Client;
+
+				var issuesTask = client.Issues.GetAllAsync(repository.ProjectID);
+				var labelsTask = client.Projects.GetLabelsAsync(repository.ProjectID);
+
+				await Task.WhenAll(issuesTask, labelsTask);
+
+				allIssues = issuesTask.Result;
+				labels = labelsTask.Result;
+			}
+
+			if (allIssues.Count() == 0)
 			{
 				Log.WriteLine("No assigned issues");
+				return;
 			}
-			else
+
+			var writer = new IssueWriter(labels);
+			writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
+			writer.UseColor = !options.NoColor;
+
+			// Filter issues
+			var issues = allIssues;
+			if (!options.ShowAllUsers)
 			{
-				var labels = labelsTask.Result;
-				var writer = new IssueWriter(labels);
-				writer.DefaultDotSymbol = options.DotSymbol ?? writer.DefaultDotSymbol;
-				writer.UseColor = !options.NoColor;
-
-				if (!options.IncludeBacklog)
-				{
-					issues = issues.Where(x => !x.Labels.Contains("backlog"));
-				}
-
-				writer.Print(issues, options.AlignLabels);
+				issues = issues.Where(x => x.Assignee?.Username == repository.User.Name);
 			}
-
-			void SelectOnlyMyIssues(IssuesQueryOptions o)
+			if (!options.IncludeBacklog)
 			{
-				var assignees = new List<string>(1);
-				if (options.ShowAllUsers)
-				{
-				}
-				else
-				{
-					assignees.Add(repository.User.Name);
-				}
-
-				o.AssigneeUsername = assignees;
+				issues = issues.Where(x => !x.Labels.Contains("backlog"));
 			}
+			// Apply
+			writer.Print(issues, options.AlignLabels);
+
+			if (!cacheAvailable)
+			{
+				var cache = new Cache()
+				{
+					timestamp = DateTime.UtcNow,
+					issues = allIssues.ToList(),
+					labels = labels.ToList(),
+				};
+
+				Cache.Write(cache);
+			}
+
+			var first = allIssues.OrderBy(x => x.Id).Skip(2).First();
+			var json = JsonSerializer.Serialize(first);
 		}
 	}
 }

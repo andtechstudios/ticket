@@ -118,9 +118,9 @@ namespace Andtech.Ticket
 
 				var titleColumn = $"{issue.Title}";
 				Console.Write(titleColumn);
-				foreach (var assignee in issue.Assignees)
+				if (!string.IsNullOrEmpty(issue.Assignee?.Username))
 				{
-					Console.Write(Bright.Black($" @{assignee.Username}"));
+					Console.Write(Bright.Black($" @{issue.Assignee.Username}"));
 				}
 				Console.WriteLine();
 			}
