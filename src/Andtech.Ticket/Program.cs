@@ -33,6 +33,8 @@ try
         .WithParsedAsync<CloseCommand.Options>(CloseCommand.OnParseAsync);
     await result
         .WithParsedAsync<ViewCommand.Options>(ViewCommand.OnParseAsync);
+	await result
+		 .WithParsedAsync<FetchCommand.Options>(FetchCommand.OnParseAsync);
 }
 catch (TicketConfigurationException)
 {

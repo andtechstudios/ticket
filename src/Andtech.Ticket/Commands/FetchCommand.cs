@@ -1,4 +1,5 @@
-﻿using Andtech.Ticket.Core;
+﻿using Andtech.Common;
+using Andtech.Ticket.Core;
 using CommandLine;
 
 namespace Andtech.Ticket
@@ -31,6 +32,8 @@ namespace Andtech.Ticket
 			};
 
 			Cache.Write(cache);
+
+			Log.WriteLine($"Fetched {allIssues.Count()} issues");
 		}
 	}
 }

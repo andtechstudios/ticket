@@ -92,7 +92,10 @@ namespace Andtech.Ticket
 				issues = issues.Where(x => !x.Labels.Contains("backlog"));
 			}
 			// Apply
-			writer.Print(issues, options.AlignLabels);
+			if (issues.Any())
+			{
+				writer.Print(issues, options.AlignLabels);
+			}
 
 			if (!cacheAvailable)
 			{
